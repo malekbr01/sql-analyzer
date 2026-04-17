@@ -1,0 +1,451 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+
+.container { padding: 1.5rem 0; max-width: 860px; }
+
+.header { margin-bottom: 1.5rem; }
+.header h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.editor-area { position: relative; margin-bottom: 12px; }
+textarea {
+  width: 100%; min-height: 160px; padding: 14px 16px;
+  font-family: var(--font-mono); font-size: 14px; line-height: 1.7;
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  resize: vertical; outline: none;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: #7F77DD; box-shadow: 0 0 0 2px #EEEDFE; }
+
+.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+button {
+  padding: 7px 16px; font-size: 13px; font-weight: 500;
+  border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary);
+  cursor: pointer; transition: all 0.12s;
+  background: var(--color-background-primary); color: var(--color-text-primary);
+}
+button:hover { background: var(--color-background-secondary); }
+button:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: #534AB7; color: #EEEDFE;
+  border-color: #534AB7;
+}
+.btn-primary:hover { background: #3C3489; }
+
+.btn-clear { color: var(--color-text-secondary); }
+
+.examples-label { font-size: 12px; color: var(--color-text-tertiary); margin-left: 4px; }
+
+.example-btn {
+  padding: 5px 12px; font-size: 12px; font-weight: 400;
+  background: #EEEDFE; border-color: #AFA9EC; color: #3C3489;
+  border-radius: 20px;
+}
+.example-btn:hover { background: #CECBF6; }
+
+.result-area { display: none; }
+.result-area.visible { display: block; }
+
+.result-card {
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  background: var(--color-background-primary);
+}
+
+.result-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary);
+}
+.result-header .status-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-ok { background: #639922; }
+.dot-err { background: #E24B4A; }
+.dot-warn { background: #EF9F27; }
+
+.result-header .status-label { font-size: 13px; font-weight: 500; }
+.result-header .result-type { font-size: 12px; color: var(--color-text-secondary); margin-left: auto; }
+
+.result-body { padding: 16px; }
+
+.section { margin-bottom: 16px; }
+.section:last-child { margin-bottom: 0; }
+.section-title { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+.token-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.token {
+  padding: 3px 10px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);
+}
+.token-kw  { background: #EEEDFE; color: #3C3489; border: 0.5px solid #AFA9EC; }
+.token-id  { background: #EAF3DE; color: #27500A; border: 0.5px solid #97C459; }
+.token-val { background: #FAEEDA; color: #633806; border: 0.5px solid #EF9F27; }
+.token-op  { background: #F1EFE8; color: #444441; border: 0.5px solid #B4B2A9; }
+.token-fn  { background: #E6F1FB; color: #0C447C; border: 0.5px solid #85B7EB; }
+.token-err { background: #FCEBEB; color: #791F1F; border: 0.5px solid #F09595; }
+
+.message-block {
+  padding: 10px 14px; border-radius: var(--border-radius-md);
+  font-size: 13px; line-height: 1.6; font-family: var(--font-mono);
+}
+.msg-ok   { background: #EAF3DE; color: #27500A; border: 0.5px solid #C0DD97; }
+.msg-err  { background: #FCEBEB; color: #791F1F; border: 0.5px solid #F7C1C1; }
+.msg-warn { background: #FAEEDA; color: #633806; border: 0.5px solid #FAC775; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+.stat-card {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md); padding: 10px 12px; text-align: center;
+}
+.stat-num { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.stat-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.structure-tree { font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: var(--color-text-secondary); }
+.structure-tree .kw { color: #534AB7; font-weight: 500; }
+.structure-tree .id { color: #3B6D11; }
+.structure-tree .val { color: #854F0B; }
+.structure-tree .fn { color: #185FA5; }
+
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 12px 0; }
+
+.history-section { margin-top: 1.5rem; }
+.history-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px; font-weight: 500; }
+.history-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px; font-size: 12px; font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md); margin-bottom: 6px;
+  cursor: pointer; background: var(--color-background-primary);
+  transition: background 0.1s;
+}
+.history-item:hover { background: var(--color-background-secondary); }
+.history-item .h-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.history-item .h-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.history-item .h-time { color: var(--color-text-tertiary); font-size: 11px; flex-shrink: 0; }
+</style>
+
+<h2 class="sr-only">Interface d'analyse de requêtes SQL — saisir une requête SQL pour obtenir une analyse syntaxique, sémantique et lexicale</h2>
+
+<div class="container">
+  <div class="header">
+    <h2>Analyseur SQL</h2>
+    <p>Tables disponibles : <code>employes</code>, <code>departements</code></p>
+  </div>
+
+  <div class="editor-area">
+    <textarea id="sql-input" spellcheck="false" placeholder="Saisir votre requête SQL ici...
+Ex: SELECT nom, prenom FROM employes WHERE salaire > 3000;"></textarea>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-primary" onclick="analyser()">Analyser ↗</button>
+    <button class="btn-clear" onclick="clearAll()">Effacer</button>
+    <span class="examples-label">Exemples :</span>
+    <button class="example-btn" onclick="setExample('select')">SELECT</button>
+    <button class="example-btn" onclick="setExample('update')">UPDATE</button>
+    <button class="example-btn" onclick="setExample('delete')">DELETE</button>
+    <button class="example-btn" onclick="setExample('complex')">Complexe</button>
+    <button class="example-btn" onclick="setExample('error')">Erreur</button>
+  </div>
+
+  <div id="result-area" class="result-area">
+    <div class="result-card">
+      <div class="result-header">
+        <div class="status-dot" id="status-dot"></div>
+        <span class="status-label" id="status-label"></span>
+        <span class="result-type" id="result-type"></span>
+      </div>
+      <div class="result-body">
+        <div class="section" id="section-message">
+          <div class="section-title">Résultat de l'analyse</div>
+          <div class="message-block" id="message-block"></div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="section">
+          <div class="section-title">Sortie brute (debug)</div>
+          <pre id="stdout-brut"></pre>
+          <pre id="stderr-brut"></pre>
+        </div>
+        <div class="divider"></div>
+        <div class="section" id="section-structure">
+          <div class="section-title">Structure syntaxique</div>
+          <div class="structure-tree" id="structure-tree"></div>
+        </div>
+        <div class="divider" id="div-sem" style="display:none"></div>
+        <div class="section" id="section-sem" style="display:none">
+          <div class="section-title">Avertissements sémantiques</div>
+          <div class="message-block msg-warn" id="sem-block"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="section">
+          <div class="section-title">Statistiques de session</div>
+          <div class="stats-grid" id="stats-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="history-section" class="history-section" style="display:none">
+    <div class="history-title">Historique</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<script>
+const TABLES = ['employes', 'departements'];
+const KEYWORDS = ['SELECT','FROM','WHERE','UPDATE','DELETE','SET','INSERT','INTO','VALUES','AND','OR','NOT','IN','IS','LIKE','BETWEEN','GROUP','BY','HAVING','ORDER','LIMIT','OFFSET','DISTINCT','ALL','AS','ASC','DESC','NULL','JOIN','ON','INNER','LEFT','RIGHT','OUTER'];
+const FUNCTIONS = ['COUNT','SUM','AVG','MIN','MAX','UPPER','LOWER'];
+const OPERATORS = ['=','<','>','<=','>=','!=','<>','+','-','*','/','%',',',';','(',')'];
+
+let stats = { select: 0, update: 0, delete: 0, where: 0, total: 0 };
+let history = [];
+
+const examples = {
+  select: `SELECT nom, prenom, salaire\nFROM employes\nWHERE salaire > 3000\nORDER BY salaire DESC\nLIMIT 10;`,
+  update: `UPDATE employes\nSET salaire = salaire * 1.1\nWHERE departement_id = 2;`,
+  delete: `DELETE FROM employes\nWHERE salaire < 1500\nLIMIT 5;`,
+  complex: `SELECT e.nom, d.nom AS departement, COUNT(*) AS nb\nFROM employes e, departements d\nWHERE e.salaire BETWEEN 2000 AND 5000\nAND e.nom LIKE 'A%'\nGROUP BY d.nom\nHAVING COUNT(*) > 2\nORDER BY nb DESC;`,
+  error: `SELECT * FROM clients WHERE id = 1;`
+};
+
+function setExample(k) {
+  document.getElementById('sql-input').value = examples[k];
+}
+
+function clearAll() {
+  document.getElementById('sql-input').value = '';
+  document.getElementById('result-area').classList.remove('visible');
+}
+
+function tokenize(sql) {
+  const tokens = [];
+  const upper = sql.toUpperCase();
+  const parts = sql.match(/('[^']*'|[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?|[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|<=|>=|!=|<>|[=<>+\-*\/%,;()]|'[^']*)/g) || [];
+
+  for (const p of parts) {
+    const up = p.toUpperCase();
+    if (KEYWORDS.includes(up)) tokens.push({ text: p, type: 'kw' });
+    else if (FUNCTIONS.includes(up)) tokens.push({ text: p, type: 'fn' });
+    else if (OPERATORS.includes(p)) tokens.push({ text: p, type: 'op' });
+    else if (/^'.*'$/.test(p)) tokens.push({ text: p, type: 'val' });
+    else if (/^[0-9]/.test(p)) tokens.push({ text: p, type: 'val' });
+    else tokens.push({ text: p, type: 'id' });
+  }
+  return tokens;
+}
+
+function detectType(sql) {
+  const s = sql.trim().toUpperCase();
+  if (s.startsWith('SELECT')) return 'SELECT';
+  if (s.startsWith('UPDATE')) return 'UPDATE';
+  if (s.startsWith('DELETE')) return 'DELETE';
+  if (s.startsWith('INSERT')) return 'INSERT';
+  return 'INCONNU';
+}
+
+function analyse(sql) {
+  const result = { ok: true, errors: [], warnings: [], type: 'INCONNU', structure: '', tokens: [] };
+  const s = sql.trim();
+
+  if (!s) { result.ok = false; result.errors.push('Requête vide'); return result; }
+  if (!s.endsWith(';')) { result.errors.push('Requête non terminée par un point-virgule « ; »'); result.ok = false; }
+
+  result.type = detectType(s);
+  result.tokens = tokenize(s);
+
+  const upper = s.toUpperCase();
+
+  // Vérifications syntaxiques de base
+  if (result.type === 'SELECT') {
+    if (!upper.includes('FROM')) { result.errors.push('Clause FROM manquante'); result.ok = false; }
+    if (upper.startsWith('SELECT WHERE') || upper.startsWith('SELECT FROM')) { result.errors.push('Liste de colonnes manquante après SELECT'); result.ok = false; }
+  } else if (result.type === 'UPDATE') {
+    if (!upper.includes('SET')) { result.errors.push('Clause SET manquante'); result.ok = false; }
+  } else if (result.type === 'DELETE') {
+    if (!upper.includes('FROM')) { result.errors.push('Clause FROM manquante après DELETE'); result.ok = false; }
+  } else if (result.type === 'INCONNU') {
+    result.ok = false;
+    result.errors.push('Type de requête non reconnu (SELECT, UPDATE, DELETE attendu)');
+  }
+
+  // Parenthèses équilibrées
+  let depth = 0;
+  for (const c of s) { if (c === '(') depth++; else if (c === ')') depth--; }
+  if (depth !== 0) { result.errors.push('Parenthèses non équilibrées'); result.ok = false; }
+
+  // Vérification sémantique : tables connues
+  const tableMatches = [...s.matchAll(/(?:FROM|UPDATE|JOIN)\s+([a-zA-Z_][a-zA-Z0-9_]*)/gi)];
+  for (const m of tableMatches) {
+    const t = m[1].toLowerCase();
+    if (!TABLES.includes(t) && !['select','update','delete'].includes(t)) {
+      result.warnings.push(`Table « ${m[1]} » inconnue — tables disponibles : ${TABLES.join(', ')}`);
+    }
+  }
+
+  // Génération de la structure syntaxique
+  result.structure = buildStructure(s, result.type, upper);
+  return result;
+}
+
+function buildStructure(s, type, upper) {
+  let lines = [];
+  const indent = (n, text) => '&nbsp;'.repeat(n * 4) + text;
+
+  if (type === 'SELECT') {
+    const selMatch = s.match(/SELECT\s+(DISTINCT\s+|ALL\s+)?([\s\S]+?)\s+FROM/i);
+    const fromMatch = s.match(/FROM\s+([\s\S]+?)(?:\s+WHERE|\s+GROUP|\s+ORDER|\s+LIMIT|;|$)/i);
+    const whereMatch = s.match(/WHERE\s+([\s\S]+?)(?:\s+GROUP|\s+ORDER|\s+LIMIT|;|$)/i);
+    const groupMatch = s.match(/GROUP\s+BY\s+([\s\S]+?)(?:\s+HAVING|\s+ORDER|\s+LIMIT|;|$)/i);
+    const havingMatch = s.match(/HAVING\s+([\s\S]+?)(?:\s+ORDER|\s+LIMIT|;|$)/i);
+    const orderMatch = s.match(/ORDER\s+BY\s+([\s\S]+?)(?:\s+LIMIT|;|$)/i);
+    const limitMatch = s.match(/LIMIT\s+(\d+)(?:\s+OFFSET\s+(\d+))?/i);
+
+    lines.push(`<span class="kw">SELECT</span>`);
+    if (selMatch) lines.push(indent(1, `<span class="id">${selMatch[2].trim()}</span>`));
+    if (fromMatch) lines.push(indent(0, `<span class="kw">FROM</span> <span class="id">${fromMatch[1].trim()}</span>`));
+    if (whereMatch) lines.push(indent(0, `<span class="kw">WHERE</span> <span class="val">${whereMatch[1].trim()}</span>`));
+    if (groupMatch) lines.push(indent(0, `<span class="kw">GROUP BY</span> <span class="id">${groupMatch[1].trim()}</span>`));
+    if (havingMatch) lines.push(indent(0, `<span class="kw">HAVING</span> <span class="val">${havingMatch[1].trim()}</span>`));
+    if (orderMatch) lines.push(indent(0, `<span class="kw">ORDER BY</span> <span class="id">${orderMatch[1].trim()}</span>`));
+    if (limitMatch) lines.push(indent(0, `<span class="kw">LIMIT</span> <span class="val">${limitMatch[1]}${limitMatch[2] ? ' OFFSET ' + limitMatch[2] : ''}</span>`));
+  } else if (type === 'UPDATE') {
+    const tblMatch = s.match(/UPDATE\s+(\w+)/i);
+    const setMatch = s.match(/SET\s+([\s\S]+?)(?:\s+WHERE|\s+LIMIT|;|$)/i);
+    const whereMatch = s.match(/WHERE\s+([\s\S]+?)(?:\s+LIMIT|;|$)/i);
+    if (tblMatch) lines.push(`<span class="kw">UPDATE</span> <span class="id">${tblMatch[1]}</span>`);
+    if (setMatch) lines.push(indent(0, `<span class="kw">SET</span> <span class="val">${setMatch[1].trim()}</span>`));
+    if (whereMatch) lines.push(indent(0, `<span class="kw">WHERE</span> <span class="val">${whereMatch[1].trim()}</span>`));
+  } else if (type === 'DELETE') {
+    const tblMatch = s.match(/DELETE\s+FROM\s+(\w+)/i);
+    const whereMatch = s.match(/WHERE\s+([\s\S]+?)(?:\s+LIMIT|;|$)/i);
+    if (tblMatch) lines.push(`<span class="kw">DELETE FROM</span> <span class="id">${tblMatch[1]}</span>`);
+    if (whereMatch) lines.push(indent(0, `<span class="kw">WHERE</span> <span class="val">${whereMatch[1].trim()}</span>`));
+  }
+
+  return lines.join('<br>');
+}
+
+function renderStats() {
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = [
+    ['SELECT', stats.select, '#534AB7'],
+    ['UPDATE', stats.update, '#185FA5'],
+    ['DELETE', stats.delete, '#A32D2D'],
+    ['WHERE', stats.where, '#3B6D11'],
+    ['Total', stats.total, '#5F5E5A']
+  ].map(([l, n, c]) => `
+    <div class="stat-card">
+      <div class="stat-num" style="color:${c}">${n}</div>
+      <div class="stat-lbl">${l}</div>
+    </div>`).join('');
+}
+
+function renderHistory() {
+  const sect = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (history.length === 0) { sect.style.display = 'none'; return; }
+  sect.style.display = 'block';
+  list.innerHTML = history.slice(-5).reverse().map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${history.length - 1 - i})">
+      <div class="h-dot" style="background:${h.ok ? '#639922' : '#E24B4A'}"></div>
+      <div class="h-text">${h.sql.replace(/\n/g, ' ')}</div>
+      <div class="h-time">${h.time}</div>
+    </div>`).join('');
+}
+
+function loadHistory(idx) {
+  document.getElementById('sql-input').value = history[idx].sql;
+}
+
+const API_URL = 'http://localhost:5000/analyse';
+
+async function analyser() {
+    const sql = document.getElementById('sql-input').value.trim();
+    if (!sql) return;
+
+    // Afficher un état de chargement
+    document.getElementById('status-label').textContent = 'Analyse en cours...';
+    document.getElementById('result-area').classList.add('visible');
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sql })
+        });
+
+        const data = await response.json();
+
+        // Afficher les résultats réels du binaire
+        afficherResultat(data, sql);
+
+    } catch (err) {
+        // Le serveur n'est pas lancé
+        afficherErreurConnexion();
+    }
+}
+
+function afficherResultat(data, sql) {
+    // OK ou erreur
+    const dot = document.getElementById('status-dot');
+    const label = document.getElementById('status-label');
+    const msgBlock = document.getElementById('message-block');
+
+    if (data.ok && data.erreurs_semantiques.length === 0) {
+        dot.className = 'status-dot dot-ok';
+        label.textContent = 'Syntaxe valide';
+        msgBlock.className = 'message-block msg-ok';
+    } else if (data.ok) {
+        dot.className = 'status-dot dot-warn';
+        label.textContent = 'Valide avec avertissements';
+        msgBlock.className = 'message-block msg-warn';
+    } else {
+        dot.className = 'status-dot dot-err';
+        label.textContent = 'Erreur détectée';
+        msgBlock.className = 'message-block msg-err';
+    }
+
+    // Messages du vrai binaire
+    const tousMessages = [
+        ...data.messages,
+        ...data.erreurs_syntaxiques,
+        ...data.erreurs_lexicales,
+        ...data.erreurs_semantiques
+    ];
+    msgBlock.innerHTML = tousMessages.join('<br>') || '[OK] Analyse terminée';
+
+    // Stats réelles
+    stats.select = data.stats.select;
+    stats.update = data.stats.update;
+    stats.delete = data.stats.delete;
+    stats.where  = data.stats.where;
+    renderStats();
+
+    // Sortie brute du programme
+    document.getElementById('stdout-brut').textContent = data.stdout_brut;
+    document.getElementById('stderr-brut').textContent = data.stderr_brut;
+}
+
+function afficherErreurConnexion() {
+    document.getElementById('status-dot').className = 'status-dot dot-err';
+    document.getElementById('status-label').textContent = 'Serveur introuvable';
+    document.getElementById('message-block').textContent =
+        'Impossible de joindre le serveur sur localhost:5000.\nLancez : python server.py';
+}
+document.getElementById('sql-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) analyser();
+});
+
+renderStats();
+</script>

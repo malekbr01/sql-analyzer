@@ -1,0 +1,13 @@
+# fichiers compilés
+sql2
+lex.yy.c
+sql2.tab.c
+sql2.tab.h
+
+# python
+__pycache__/
+*.pyc
+
+# fichiers temporaires
+*.sql
+*.tmp
